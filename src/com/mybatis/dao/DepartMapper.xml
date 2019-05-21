@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace属性：指定到接口-->
+<mapper namespace="com.mybatis.dao.DepartMapper">
+  <!-- public Department findByDeptId(int d)-->
+    <select id="findByDeptId" resultType="com.mybatis.bean.Department">
+        select id,dept_name deptName  from dept where id=#{id}
+    </select>
+    <!--
+    第二种情况：
+      查询某一个部门的信息，以及该部门中的所有员工信息
+      两种情况：
+       方法1：连接查询
+     select d.id,d.dept_name,e.id,e.last_Name,e.gender,e.email
+ from dept d LEFT JOIN employee e on d.id=e.d_id where d.id=1;
+    -->
+    <resultMap id="myDeptEmp01"  type="com.mybatis.bean.Department">
+        <id column="id" property="id"/>
+        <result column="dept_name" property="deptName"/>
+        <!--所有员工信息  一对多映射-->
+        <collection property="emps"  ofType="com.mybatis.bean.Employee">
+              <!--对应着Employee类中的属性：
+              此时did字段和查询SQL语句中的e.id的别名did对应.
+              -->
+            <id column="did"  property="id"/>
+            <result column="last_name" property="lastName"/>
+            <result column="gender"    property="gender"/>
+            <result column="email"     property="email"/>
+        </collection>
+
+    </resultMap>
+    <!-- public Department findByDeptEmpId(int id)-->
+  <select id="findByDeptEmpId"  resultMap="myDeptEmp01">
+     select d.id,d.dept_name,e.id did,e.last_Name,e.gender,e.email
+    from dept d LEFT JOIN employee e on d.id=e.d_id where d.id=#{id}
+  </select>
+</mapper>

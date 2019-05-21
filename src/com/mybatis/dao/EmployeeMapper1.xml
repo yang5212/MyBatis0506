@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace属性：指定到接口-->
+<mapper namespace="com.mybatis.dao.EmployeeMapper1">
+<!--主键的生成方式:
+在MySQL及SQL Server中，都支持主键的自动增长
+-->
+<!--MYsql中的主键自动生成-->
+<!--public void addEmp01(Employee employee);-->
+    <insert id="addEmp01" parameterType="com.mybatis.bean.Employee" databaseId="mysql"
+     useGeneratedKeys="true" keyProperty="id">
+         insert into employee(last_name,gender,email) values(#{lastName},#{gender},#{email})
+    </insert>
+<!--Oracle中不支持主键的自动生成，要使用序列的值进行填充才能达到主键的自动增长
+  public void addEmp01(Employee employee);
+-->
+    <insert id="addEmp01" parameterType="com.mybatis.bean.Employee"
+            databaseId="oracle">
+        <!--order: BEFORE表示selectKey在insert into语句之前执行，若为AFTER则表示在insert 语句之后执行
+        _int：表示java.lang.Integer或int的别名
+        -->
+        <selectKey keyProperty="id"  order="BEFORE"   resultType="_int">
+                 select seq02.nextval from dual
+        </selectKey>
+         insert into employee(employee_id,last_name,gender,email)
+         values(#{id},#{lastName},#{gender},#{email})
+    </insert>
+<!--
+参数传递:
+    ==>单个参数传递
+    ==>多个参数传递
+       – 任意多个参数，都会被MyBatis重新包装成一个Map传入。
+       Map的key是param1，param2，0，1…，值就是参数的值。
+-->
+<!--public Employee findEmpByIdName(int id,String lastName)-->
+    <select id="findEmpByIdName"  resultType="com.mybatis.bean.Employee">
+          <!--select * from employee where id=#{id} and last_name=#{lastName} 此时会处错误
+        select * from employee where id=#{param1} and last_name=#{param2}
+
+        select * from employee where id=#{0} and last_name=#{1}
+        -->
+        <!--命名参数的形式实现-->
+        select * from employee where id=#{id} and last_name=#{lastName}
+    </select>
+
+<!--命名参数：主要为了解决在多个参数传递过程中，参数名方便记忆、理解
+– 为参数使用@Param起一个名字，MyBatis就会将这些参数封装进map中，key就是我们自己指定的名字
+-->
+    <!--• POJO
+     当这些参数属于我们业务POJO时，我们直接传递POJO
+    -->
+    <!--public Employee findEmpByIdName1(Employee employee)-->
+    <select id="findEmpByIdName1" resultType="com.mybatis.bean.Employee" parameterType="com.mybatis.bean.Employee">
+        select * from employee where id=#{id} and last_name=#{lastName}
+    </select>
+    <!--我们也可以封装多个参数为map，直接传递-->
+    <!--public Employee findEmpByMap(Map<String,Object> map);-->
+    <select id="findEmpByMap" parameterType="map"  resultType="com.mybatis.bean.Employee">
+        select * from employee where id=#{id} and last_name=#{lastName}
+    </select>
+    <!--
+    • #{key}：获取参数的值，预编译到SQL中。安全.===PreparedStatement接口
+    • ${key}：获取参数的值，拼接到SQL中。有SQL注入问
+    在实际开发中，若SQL不支持拼接的写法，则用#{}的写法，
+    支持拼接的话，建议使用：${}的写法
+    在Oralce中：
+    select * from ${table} where id=${id}
+  -->
+    <!--public Employee findEmpByIdName2(int id,String lastName);-->
+    <select id="findEmpByIdName2"  resultType="com.mybatis.bean.Employee">
+         select * from employee where id=${0} and last_name=#{1}
+    </select>
+
+    <!--===========================2019.5.6记录================================== -->
+    <!--public List<Employee> findAllEmpsListLike1(String lastName);-->
+   <select id="findAllEmpsListLike1" parameterType="string"  resultType="com.mybatis.bean.Employee">
+        select * from employee where last_name like #{lastName}
+   </select>
+   <!-- public Map<String,Object> findAllEmpsListLike2(int id)-->
+    <select id="findAllEmpsListLike2"  parameterType="_int" resultType="map">
+        select * from employee where id=#{id}
+    </select>
+    <!-- public Map<Integer,List<Employee>> findAllEmpsListLike3(String lastName)-->
+    <select id="findAllEmpsListLike3" parameterType="string" resultType="map">
+       select * from employee where last_name like #{lastName}
+    </select>
+</mapper>

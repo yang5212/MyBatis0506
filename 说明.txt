@@ -1,0 +1,37 @@
+Name        Type         Nullable Default Comments
+----------- ------------ -------- ------- --------
+EMPLOYEE_ID NUMBER(10)
+LAST_NAME   VARCHAR2(20) Y
+GENDER      NUMBER(1)    Y
+EMAIL       VARCHAR2(20) Y
+
+当前的用户(权限最小): scott
+权限大一点用户：system
+权限最大的用户: sys
+全局数据库名: orcl
+创建employee表：
+create table employee(
+ employee_id number(10) not null primary key,
+ last_name varchar2(20),
+ gender number(1),
+ email varchar2(20));
+ 切换用户: conn sys/yang
+ 创建序列:
+ create sequence seq02;
+ select seq02.nextVal from dual;
+
+ ---------------多表操作------------------
+ MySQL数据库中：
+ 部门表与员工表之间的关系：一对多
+ 部门表:
+ dept表:
+ create table dept(
+ id int not null primary key auto_increment,
+ dept_name varchar(30) );
+employee表修改：
+添加一个外键字段：
+alter table  employee add d_id int foreign key references dept(id);
+此时两张表的结构：
+
+
+

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE  configuration  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--全局配置文件
+       properties: 标签中的属性
+         resource: 连接到类路径下的属性文件
+         url: 连接硬盘或网络上路径下的属性文件
+    -->
+    <properties resource="jdbc.properties"></properties>
+    <!--设置驼峰命名规则：开启,若属性名和字段名不同，但是字段名中包含下划线，此时就可以将该属性
+    和对应的字段进行匹配-->
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!--在Oracle中，不支持null值插入到字段中，mySQL中是支持的-->
+        <setting name="jdbcTypeForNull" value="NULL"/>
+    </settings>
+
+    <!--给实体类指定别名:
+      package: 批量给某个包中的所有类指定别名，此时对应的别名其实就是该类名的首字母小写
+      typeAlias: 给具体某个实体类指定别名(一般是针对实体类来指定别名的，其他的类其实可以指定别名)
+      别名不区分大小写。
+    -->
+    <typeAliases>
+        <!--
+        <typeAlias type="com.mybatis.bean.Employee" alias="emp"></typeAlias>-->
+        <package name="com.mybatis.bean"></package>
+    </typeAliases>
+
+    <!--配置自定义的类型转换器-->
+    <typeHandlers>
+        <typeHandler handler="com.mybatis.typehandler.ExampleTypeHandler"
+                     javaType="String"  jdbcType="VARCHAR"/>
+    </typeHandlers>
+
+
+    <environments default="mysqlDev">
+        <environment id="mysqlDev">
+            <transactionManager type="JDBC"/>  <!--事务管理器-->
+            <dataSource type="POOLED">  <!--数据源-->
+                <property name="driver" value="${mysqlDriver}"/>
+                <property name="url" value="${mysqlUrl}"/>
+                <property name="username" value="${mysqlUser}"/>
+                <property name="password" value="${mysqlPassword}"/>
+            </dataSource>
+        </environment>
+
+        <environment id="oracleDev">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver"  value="${oracleDriver}"/>
+                <property name="url"     value="${oracleUrl}"/>
+                <property name="username" value="${oracleUsername}"/>
+                <property name="password" value="${oraclePassword}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <!--配置不同数据库提供商
+      databaseIdProvider：中的属性property 中的name的值必须为数据库供应商的官方名称
+      -->
+    <databaseIdProvider type="DB_VENDOR">
+        <property name="MySQL"  value="mysql"></property>
+        <property name="Oracle" value="oracle"></property>
+        <property name="SQL Server" value="sqlserver"></property>
+    </databaseIdProvider>
+    <!--映射文件的配置
+       mapper:
+         resource属性， 指定到对应的映射文件如 com/mybatis/dao/EmployeeMapper.xml
+         class属性：指定到对应的接口（注解)
+         url: 指定硬盘或网络上的映射文件
+       批量处理：package
+    -->
+    <mappers>
+        <!--
+        <mapper resource="com/mybatis/dao/EmployeeMapper.xml"/>
+        -->
+        <package  name="com.mybatis.dao"></package>
+    </mappers>
+</configuration>

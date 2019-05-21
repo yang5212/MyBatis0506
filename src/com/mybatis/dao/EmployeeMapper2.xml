@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace属性：指定到接口-->
+<mapper namespace="com.mybatis.dao.EmployeeMapper2">
+ <!--public Employee findEmpById01(int id);-->
+    <resultMap id="myMap01" type="com.mybatis.bean.Employee">
+        <!--指定ID对应的主键
+       <id  column="id"  property="id"/>
+       <result column="last_name" property="lastName"/>
+        <result column="gender" property="gender"/>
+        <result column="email" property="email"/>
+        -->
+        <!--构造注入-->
+        <constructor>
+            <idArg column="id"      javaType="_int"/>
+            <arg column="last_name" javaType="java.lang.String"/>
+            <arg column="gender"  javaType="_int"/>
+            <arg column="email"   javaType="string"/>
+        </constructor>
+    </resultMap>
+    <select id="findEmpById01" resultMap="myMap01" resultType="com.mybatis.bean.Employee">
+           select * from employee where id=#{id}
+    </select>
+    <!--=========================多表操作 =================== -->
+    <!--
+     第一种情况: 若要查询员工的信息，包括了部门的信息
+     accociation:
+     复杂对象映射
+• POJO中的属性可能会是一个对象
+• 我们可以使用联合查询，并以级联属性的方式封装对象。
+    -->
+    <resultMap id="EmpDeptMap1" type="com.mybatis.bean.Employee">
+       <id column="id" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="gender" property="gender"/>
+        <result column="email" property="email"/>
+        <!-- 一对一的关系映射-->
+        <association property="department"  javaType="com.mybatis.bean.Department">
+            <id column="id" property="id"/>
+            <result column="dept_name" property="deptName"/>
+        </association>
+    </resultMap>
+    <!--public Employee findEmpByDept01(int id)-->
+    <select id="findEmpByDept01" resultMap="EmpDeptMap1" parameterType="_int">
+     select e.id,e.last_Name,e.gender,e.email,d.id did,d.dept_name
+     from employee e LEFT JOIN dept d on e.d_id=d.id
+     where e.id=#{id}
+    </select>
+    <!--分步查询：分两步完成。
+    先查询员工信息，再根据部门编号来查询部门的信息。
+    select * from employee where id=1;
+    select * from dept where id=1;
+    改为子查询：
+    select * from dept where id=(select d_id from employee where id=1);
+    -->
+    <resultMap id="EmpDeptMap2" type="com.mybatis.bean.Employee">
+        <id column="id" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="gender" property="gender"/>
+        <result column="email" property="email"/>
+        <!--对应着部门的字段、属性信息 一对一的关系映射 association-->
+        <association property="department" column="d_id" select="com.mybatis.dao.DepartMapper.findByDeptId">
+            <id column="id" property="id"/>
+            <result column="dept_name" property="deptName"/>
+        </association>
+    </resultMap>
+    <!--public Employee findEmpByDept02(int id)-->
+    <select id="findEmpByDept02" parameterType="_int" resultMap="EmpDeptMap2">
+        select * from employee where id=#{id}
+    </select>
+    <!--
+    第二种情况：
+      查询某一个部门的信息，以及该部门中的所有员工信息
+      两种情况：
+       方法1：连接查询
+     select d.id,d.dept_name,e.id,e.last_Name,e.gender,e.email
+ from dept d LEFT JOIN employee e on d.id=e.d_id where d.id=1;
+    -->
+
+
+</mapper>
